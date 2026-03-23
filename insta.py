@@ -28,29 +28,13 @@ job_queue = Queue()
 IG_SESSIONID = "45575449095%3AUrvTriciDLscrU%3A24%3AAYgIlKqec94V45FDsXtIHB3D2_mwO8CMClKunun_ug"
 
 # =========================
-# PROFILE INFO FUNTION
-def get_profile_info(username):
-    try:
-        profile = instaloader.Profile.from_username(L.context, username)
+# JOB SYSTEM
 
-        data = {
-            "username": profile.username,
-            "fullname": profile.full_name,
-            "followers": profile.followers,
-            "following": profile.followees,
-            "posts": profile.mediacount,
-            "bio": profile.biography,
-            "pfp": profile.profile_pic_url
-        }
-
-        return data
-
-    except Exception as e:
-        log(f"Profile info error: {e}")
-        return None
 # =========================
 # LOG FUNCTION
 # =========================
+
+
 
 def log(msg):
     t = datetime.datetime.now().strftime("%H:%M:%S")
@@ -166,9 +150,6 @@ def scrape_background(job, context):
         time.sleep(5)
 
         log(f"Current URL: {page.url}")
-        log(f"page title : {page.title}")
-        bot.send_message(job.chat_id,f"🌐 Page Title:\n{page.title}")
-        bot.send_message(job.chat_id,f"🔗 Current URL:\n{page.url}")
         if "challenge" in page.url:
             log("Instagram triggered a security challenge. Session is blocked.")
             page.close()
@@ -312,9 +293,8 @@ def start(message):
         "Send Instagram username"
     )
 class Job:
-    def __init__(self, username,chat_id):
+    def __init__(self, username):
         self.username = username
-        self.chat_id = chat_id
         self.posts = []
         self.sent = 0
         self.running = True
@@ -336,35 +316,6 @@ def profile_handler(message):
             "❌ Invalid input.\n\nSend:\n• Instagram username\n• Instagram profile link"
         )
         return
-
-    # get profile info first
-    info = get_profile_info(username)
-
-    if not info:
-        bot.send_message(message.chat.id, "❌ Could not load Instagram profile.")
-        return
-
-    caption = f"""
-    👤 Username: {info['username']}
-    📛 Name: {info['fullname']}
-
-    📊 Followers: {info['followers']}
-    📊 Following: {info['following']}
-    📸 Total Posts: {info['posts']}
-
-    📝 Bio:
-    {info['bio']}
-    """
-
-    # send profile picture
-    try:
-        bot.send_photo(
-            message.chat.id,
-            info["pfp"],
-            caption=caption
-        )
-    except:
-        bot.send_message(message.chat.id, caption)
 
     job = Job(username)
     user_jobs[message.chat.id] = job
